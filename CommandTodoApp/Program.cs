@@ -7,9 +7,13 @@ using System.Threading.Tasks;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace CommandTodoApp;
+
 class Program
 {
-    private static readonly string FilePath = "todos.txt";
+
+    // public static readonly string FilePath = "todos.txt";
+    public static readonly string FilePath = Path.Combine(Directory.GetCurrentDirectory(), "todos.json");
+
 
     private static void Main(string[] args)
     {
@@ -18,46 +22,34 @@ class Program
         GetTask();
     }
 
-    //public static void CommandTasks()
-    //{
-    //    while (true) 
-    //    {
-    //        string command = Console.ReadLine() ?? "";
-
-    //        var allOption = new Option<bool>("--all", "Показать все задачи (включая выполненные)");
-
-    //        var addCommand = new Command("add", "Добавление новой задачи") {
-          
-    //        };
-
-    //    }
-    //}
-
-
-
     private static void GetTask()
     {
         while (true)
         {
             string command = Console.ReadLine() ?? "";
 
-            Option<string> lastOption = new("--task")
+            //       var nameOption = new Option<string>(
+            //name: "--name",
+            //aliases: new[] { "-n" }
+            //);
+
+            Option<string> taskOption = new(name: "--task", aliases: "-t")
             {
                 Description = "Отобразить задачу с конкретным id"
             };
 
-            Option<string> allOption = new("--all")
+            Option<bool> allOption = new("--all")
             {
-                Description = "Вывести лист последних заданий"
+                Description = "Вывести все задачи"
             };
 
-
-            Option<string> titleOption = new("--title")
+            Option<string> titleOption = new(name: "--title", aliases: "-ttl")
             {
                 Description = "Задать название задачи"
             };
 
-            Option<string> descOptiion = new("--desc") { 
+            Option<string> descOptiion = new(name: "--desc", aliases: "-d")
+            {
                 Description = "Задать описание задачи"
             };
 
@@ -66,9 +58,6 @@ class Program
                 Description = "Задача выполнена"
             };
 
-            RootCommand rootCommand = new("Todo проект с использованием System.CommandLine");
-            // rootCommand.Options.Add(lastOption);
-
             Command addCommand = new("add", "Создать задачу") //подкоманда
             {
                 titleOption,
@@ -76,17 +65,51 @@ class Program
                 doneOption
             };
 
-            rootCommand.Subcommands.Add(addCommand);
+            Command listCommand = new Command("list", "Отобразить задачи")
+            {
+                allOption, //если нужно отобразить в том числе и выполненные задачи
+            };
+
+            Command doneCommand = new Command("done", "Завершить задачу")
+            {
+                taskOption
+            };
+
+            RootCommand rootCommand = new("Todo проект с использованием System.CommandLine")
+            {
+            addCommand,
+            listCommand
+            };
+            // rootCommand.Options.Add(lastOption);
+
+            //rootCommand.Subcommands.Add(addCommand);
+            //rootCommand.Subcommands.Add(listCommand);
 
             addCommand.SetAction(parseResult =>
             {
                 if (parseResult.GetValue(titleOption) != null)
                 {
-                    ToDo todo = new ToDo(parseResult.GetValue(titleOption)??"", parseResult.GetValue(descOptiion)??"", parseResult.GetValue(doneOption));
-                    AddTask(todo);
+                    ToDo todo = new ToDo(parseResult.GetValue(titleOption) ?? "", parseResult.GetValue(descOptiion) ?? "", parseResult.GetValue(doneOption));
+                    todo.AddTask(todo);
                 }
-                else {
+                else
+                {
                     Console.WriteLine("Название не вписано");
+                }
+            });
+
+            listCommand.SetAction(parseResult =>
+            {
+
+                bool all = parseResult.GetValue(allOption);
+
+                List<ToDo> tasks = all ? ToDo.LoadTasks() : ToDo.LoadTasks().Where(v => v.IsCompleted == false).ToList();
+
+                Console.WriteLine($"{(tasks.Count > 0 ? $"\n Отображаем лист {(!all ? "не завершенных" : "всех")} заданий: " : "Данных нет")}");
+
+                foreach (ToDo todo in tasks)
+                {
+                    Console.WriteLine($"[{todo.CreateAt.ToShortDateString()}] {todo.Name} | {todo.Description} | {(todo.IsCompleted ? $"✓ [{todo.DoneAt.ToShortDateString()}]" : "")} \n");
                 }
             });
 
@@ -102,33 +125,6 @@ class Program
         }
     }
 
-    private static void AddTask(ToDo task) {
-        Console.WriteLine($"\n Создаем таск. \n" +
-               $" Название {task.Name}\n" +
-               $" Описание {task.Description} \n" +
-               $" Готовность {task.IsCompleted}");
 
-        List<ToDo> tasks = LoadTasks();
-        task.Id = tasks.Count > 0 ? tasks.Last().Id + 1 : 1;
-
-        tasks.Add(task);
-        SaveTasks(tasks);
-
-        Console.WriteLine($"Задача успешно добавлена! Ее id {task.Id}");
-    }
-
-    private static List<ToDo> LoadTasks()
-    {
-        if (!File.Exists(FilePath)) return new List<ToDo>();//возвращаем пустой лист, если файла не существует
-
-        var json = File.ReadAllText(FilePath);
-        return JsonSerializer.Deserialize<List<ToDo>>(json) ?? new List<ToDo>(); //парсинг джейсона
-    }
-
-    private static void SaveTasks(List<ToDo> todos)
-    {
-        var json = JsonSerializer.Serialize(todos, new JsonSerializerOptions { WriteIndented = true });
-        File.WriteAllText(FilePath, json);  //вписывание объектов в файл
-    }
 
 }
