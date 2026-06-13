@@ -6,6 +6,7 @@ namespace CommandTodoApp
 {
     public class ToDo
     {
+        public int Id { get; set; }
         public string Name { get; set; }// = "Task";
         public string Description { get; set; }// = "Description";
         public DateTime CreateAt { get; set; }
@@ -20,11 +21,23 @@ namespace CommandTodoApp
             CreateAt = DateTime.Now;
         }
 
-        public ToDo(string name, string description, DateTime createAt, DateTime doneAt, bool isCompleted) : this(name, description)
+        public ToDo(string name, string desc, bool isCompleted) : this(name, desc)
+        {
+            IsCompleted = isCompleted;
+            DoneAt = DateTime.Now;
+        }
+
+        public ToDo(string name, string description, DateTime createAt, DateTime doneAt, bool isCompleted) : this(name, description, isCompleted)
         {
             CreateAt = createAt;
             DoneAt = doneAt;
-            IsCompleted = isCompleted;
+        }
+
+        public void Done() {
+            if (this.IsCompleted) return;
+
+            this.IsCompleted = true;
+            this.DoneAt = DateTime.Now;
         }
     }
 }

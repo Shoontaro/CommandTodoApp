@@ -2,6 +2,7 @@
 using System.CommandLine.Parsing;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using static System.Net.Mime.MediaTypeNames;
 
@@ -77,11 +78,17 @@ class Program
 
             rootCommand.Subcommands.Add(addCommand);
 
-            addCommand.SetAction(parseResult => 
-            Console.WriteLine($" Создаем таск. \n" +
-            $" Название {parseResult.GetValue(titleOption)}\n" +
-            $" Описание {parseResult.GetValue(descOptiion)} \n" +
-            $" Готовность {parseResult.GetValue(doneOption)}"));
+            addCommand.SetAction(parseResult =>
+            {
+                if (parseResult.GetValue(titleOption) != null)
+                {
+                    ToDo todo = new ToDo(parseResult.GetValue(titleOption)??"", parseResult.GetValue(descOptiion)??"", parseResult.GetValue(doneOption));
+                    AddTask(todo);
+                }
+                else {
+                    Console.WriteLine("Название не вписано");
+                }
+            });
 
             //ParseResult parseResult = rootCommand.Parse(command);
 
@@ -93,6 +100,35 @@ class Program
 
             rootCommand.Parse(command).Invoke(); //запуск делегата
         }
-    } 
-    
+    }
+
+    private static void AddTask(ToDo task) {
+        Console.WriteLine($"\n Создаем таск. \n" +
+               $" Название {task.Name}\n" +
+               $" Описание {task.Description} \n" +
+               $" Готовность {task.IsCompleted}");
+
+        List<ToDo> tasks = LoadTasks();
+        task.Id = tasks.Count > 0 ? tasks.Last().Id + 1 : 1;
+
+        tasks.Add(task);
+        SaveTasks(tasks);
+
+        Console.WriteLine($"Задача успешно добавлена! Ее id {task.Id}");
+    }
+
+    private static List<ToDo> LoadTasks()
+    {
+        if (!File.Exists(FilePath)) return new List<ToDo>();//возвращаем пустой лист, если файла не существует
+
+        var json = File.ReadAllText(FilePath);
+        return JsonSerializer.Deserialize<List<ToDo>>(json) ?? new List<ToDo>(); //парсинг джейсона
+    }
+
+    private static void SaveTasks(List<ToDo> todos)
+    {
+        var json = JsonSerializer.Serialize(todos, new JsonSerializerOptions { WriteIndented = true });
+        File.WriteAllText(FilePath, json);  //вписывание объектов в файл
+    }
+
 }
