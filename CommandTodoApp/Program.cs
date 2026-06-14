@@ -33,7 +33,7 @@ class Program
             //aliases: new[] { "-n" }
             //);
 
-            Option<string> taskOption = new(name: "--task", aliases: "-t")
+            Option<int> taskOption = new(name: "--task", aliases: "-id")
             {
                 Description = "Отобразить задачу с конкретным id"
             };
@@ -78,7 +78,8 @@ class Program
             RootCommand rootCommand = new("Todo проект с использованием System.CommandLine")
             {
             addCommand,
-            listCommand
+            listCommand,
+            doneCommand
             };
             // rootCommand.Options.Add(lastOption);
 
@@ -110,6 +111,21 @@ class Program
                 foreach (ToDo todo in tasks)
                 {
                     Console.WriteLine($"[{todo.CreateAt.ToShortDateString()}] {todo.Name} | {todo.Description} | {(todo.IsCompleted ? $"✓ [{todo.DoneAt.ToShortDateString()}]" : "")} \n");
+                }
+            });
+
+            doneCommand.SetAction(parseResult => 
+            {
+                Console.WriteLine($"Было введено значение {parseResult.GetValue(taskOption)}");
+                if (parseResult.GetValue(taskOption) >0)
+                {
+                    ToDo task = ToDo.LoadTasks().Find(v => v.Id == parseResult.GetValue(taskOption));
+
+                    if (task == null) return;
+
+                    if (task.IsCompleted) { Console.WriteLine("Задача уже была выполнена"); return; }
+
+
                 }
             });
 
