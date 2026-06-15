@@ -68,9 +68,24 @@ namespace CommandTodoApp
         private static void SaveTasks(List<ToDo> todos)
         {
 
-            Console.WriteLine(Program.FilePath);
+           // Console.WriteLine(Program.FilePath);
             var json = JsonSerializer.Serialize(todos, new JsonSerializerOptions { WriteIndented = true });
             File.WriteAllText(Program.FilePath, json);  //вписывание объектов в файл
+        }
+
+        public static void DeleteTask(int id) 
+        {
+            List<ToDo> tasks = LoadTasks();
+
+            ToDo task = tasks.Find(v => v.Id == id);
+
+            if (task == null) { Console.WriteLine("Нет задачи с таким id"); return; }
+
+            tasks.Remove(task);
+
+            SaveTasks(tasks);
+
+            Console.WriteLine("Задача удалена");
         }
     }
 }

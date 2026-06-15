@@ -26,6 +26,7 @@ class Program
     {
         while (true)
         {
+            Console.WriteLine();
             string command = Console.ReadLine() ?? "";
 
             //       var nameOption = new Option<string>(
@@ -33,10 +34,15 @@ class Program
             //aliases: new[] { "-n" }
             //);
 
-            Option<int> taskOption = new(name: "--task", aliases: "-id")
-            {
-                Description = "Отобразить задачу с конкретным id"
+            Argument<int> idArg = new("id")
+            { 
+            Description = "test id argument"
             };
+
+            //Option<int> taskOption = new(name: "--task", aliases: "-id")
+            //{
+            //    Description = "Отобразить задачу с конкретным id"
+            //};
 
             Option<bool> allOption = new("--all")
             {
@@ -64,22 +70,32 @@ class Program
                 descOptiion,
                 doneOption
             };
+            addCommand.Aliases.Add("create");
 
             Command listCommand = new Command("list", "Отобразить задачи")
             {
                 allOption, //если нужно отобразить в том числе и выполненные задачи
             };
+            listCommand.Aliases.Add("show");
 
             Command doneCommand = new Command("done", "Завершить задачу")
             {
-                taskOption
+                idArg
             };
+
+            Command delCommand = new Command("delete", "Удалить задачу")
+            {
+                idArg
+            };
+
+            delCommand.Aliases.Add("del");
 
             RootCommand rootCommand = new("Todo проект с использованием System.CommandLine")
             {
             addCommand,
             listCommand,
-            doneCommand
+            doneCommand,
+            delCommand
             };
             // rootCommand.Options.Add(lastOption);
 
@@ -110,32 +126,33 @@ class Program
 
                 foreach (ToDo todo in tasks)
                 {
-                    Console.WriteLine($"[{todo.CreateAt.ToShortDateString()}] {todo.Name} | {todo.Description} | {(todo.IsCompleted ? $"✓ [{todo.DoneAt.ToShortDateString()}]" : "")} \n");
+                    Console.WriteLine($"[{todo.CreateAt.ToShortDateString()}] (ID: {todo.Id}) {todo.Name}  {todo.Description}  {(todo.IsCompleted ? $"✓ [{todo.DoneAt.ToShortDateString()}]" : "")}");
                 }
             });
 
             doneCommand.SetAction(parseResult => 
             {
-                Console.WriteLine($"Было введено значение {parseResult.GetValue(taskOption)}");
-                if (parseResult.GetValue(taskOption) >0)
+                Console.WriteLine($"Было введено значение {parseResult.GetValue(idArg)}");
+                if (parseResult.GetValue(idArg) >0)
                 {
-                    ToDo task = ToDo.LoadTasks().Find(v => v.Id == parseResult.GetValue(taskOption));
+                    List<ToDo> tasks = ToDo.LoadTasks();
+
+                    ToDo task = tasks.Find(v => v.Id == parseResult.GetValue(idArg));
 
                     if (task == null) return;
 
                     if (task.IsCompleted) { Console.WriteLine("Задача уже была выполнена"); return; }
 
+                    task.Done();
 
                 }
             });
 
-            //ParseResult parseResult = rootCommand.Parse(command);
+            delCommand.SetAction(parseResult => {
+                Console.WriteLine($"Удаляем запись {parseResult.GetValue(idArg)}");
 
-            //rootCommand.SetAction(parseResult => 
-            //{
-            //    string parsedFile = parseResult.GetValue(lastOption)??"";
-            //    Console.WriteLine($"Parsed {parsedFile}");
-            //});
+                ToDo.DeleteTask(parseResult.GetValue(idArg));
+            });
 
             rootCommand.Parse(command).Invoke(); //запуск делегата
         }
