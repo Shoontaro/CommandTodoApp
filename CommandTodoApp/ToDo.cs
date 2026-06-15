@@ -73,6 +73,19 @@ namespace CommandTodoApp
             File.WriteAllText(Program.FilePath, json);  //вписывание объектов в файл
         }
 
+        public static void DoneTask(int id) 
+        {
+            List<ToDo> tasks = LoadTasks();
+
+            ToDo task = tasks.Find(v => v.Id == id);
+
+            if (task == null) { Console.WriteLine("Нет задачи с таким id"); return; }
+
+            task.Done();
+
+            SaveTasks(tasks);
+        }
+
         public static void DeleteTask(int id) 
         {
             List<ToDo> tasks = LoadTasks();

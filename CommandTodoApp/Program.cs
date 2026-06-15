@@ -39,11 +39,6 @@ class Program
             Description = "test id argument"
             };
 
-            //Option<int> taskOption = new(name: "--task", aliases: "-id")
-            //{
-            //    Description = "Отобразить задачу с конкретным id"
-            //};
-
             Option<bool> allOption = new("--all")
             {
                 Description = "Вывести все задачи"
@@ -126,25 +121,15 @@ class Program
 
                 foreach (ToDo todo in tasks)
                 {
-                    Console.WriteLine($"[{todo.CreateAt.ToShortDateString()}] (ID: {todo.Id}) {todo.Name}  {todo.Description}  {(todo.IsCompleted ? $"✓ [{todo.DoneAt.ToShortDateString()}]" : "")}");
+                    Console.WriteLine($"[{todo.CreateAt.ToShortDateString()}] (ID: {todo.Id}) {todo.Name} {todo.Description} {(todo.IsCompleted ? $"выполнено [{todo.DoneAt.ToShortDateString()}]" : "не выполнено")}");
                 }
             });
 
             doneCommand.SetAction(parseResult => 
             {
-                Console.WriteLine($"Было введено значение {parseResult.GetValue(idArg)}");
                 if (parseResult.GetValue(idArg) >0)
                 {
-                    List<ToDo> tasks = ToDo.LoadTasks();
-
-                    ToDo task = tasks.Find(v => v.Id == parseResult.GetValue(idArg));
-
-                    if (task == null) return;
-
-                    if (task.IsCompleted) { Console.WriteLine("Задача уже была выполнена"); return; }
-
-                    task.Done();
-
+                    ToDo.DoneTask(parseResult.GetValue(idArg));
                 }
             });
 
