@@ -29,30 +29,35 @@ class Program
             Console.WriteLine();
             string command = Console.ReadLine() ?? "";
 
-            //       var nameOption = new Option<string>(
-            //name: "--name",
-            //aliases: new[] { "-n" }
-            //);
-
             Argument<int> idArg = new("id")
             { 
-            Description = "test id argument"
+            Description = "id задачи"
             };
 
-            Option<bool> allOption = new("--all")
+            Argument<string> nameArg = new("name")
             {
-                Description = "Вывести все задачи"
+                Description = "Название задачи"
             };
+
+            Argument<string> statArg = new("status") {
+                DefaultValueFactory = (_)=>"all", //объектный инициализатор
+                Description = "Статус выводимых данных (done/todo/in-progress)"
+            };
+
+            //Option<bool> allOption = new("--all")
+            //{
+            //    Description = "Вывести все задачи"
+            //};
 
             Option<string> titleOption = new(name: "--title", aliases: "-ttl")
             {
                 Description = "Задать название задачи"
             };
 
-            Option<string> descOptiion = new(name: "--desc", aliases: "-d")
-            {
-                Description = "Задать описание задачи"
-            };
+            //Option<string> descOptiion = new(name: "--desc", aliases: "-d")
+            //{
+            //    Description = "Задать описание задачи"
+            //};
 
             Option<bool> doneOption = new("--done")
             {
@@ -61,68 +66,74 @@ class Program
 
             Command addCommand = new("add", "Создать задачу") //подкоманда
             {
-                titleOption,
-                descOptiion,
+                nameArg,
+               // titleOption,
+              //  descOptiion,
                 doneOption
             };
             addCommand.Aliases.Add("create");
 
             Command listCommand = new Command("list", "Отобразить задачи")
             {
-                allOption, //если нужно отобразить в том числе и выполненные задачи
+               // allOption, //если нужно отобразить в том числе и выполненные задачи
+                statArg
             };
             listCommand.Aliases.Add("show");
 
-            Command doneCommand = new Command("done", "Завершить задачу")
+            Command doneCommand = new Command("mark-done", "Завершить задачу")
             {
                 idArg
             };
+            doneCommand.Aliases.Add("done");
+
+            Command inProgressCommand = new Command("mark-in-progress", "Задача в процессе")
+            {
+                idArg
+            };
+            inProgressCommand.Aliases.Add("progress");
 
             Command delCommand = new Command("delete", "Удалить задачу")
             {
                 idArg
             };
-
             delCommand.Aliases.Add("del");
+
+            Command updateCommand = new Command("update", "Обновить задачу") { 
+                idArg,
+                nameArg
+            };
 
             RootCommand rootCommand = new("Todo проект с использованием System.CommandLine")
             {
             addCommand,
             listCommand,
             doneCommand,
-            delCommand
+            delCommand,
+            inProgressCommand,
+            updateCommand
             };
-            // rootCommand.Options.Add(lastOption);
+            
+            inProgressCommand.SetAction(parseResult => 
+            {
+                if (parseResult.GetValue(idArg) > 0)
+                {
+                    ToDo.TaskInProgress(parseResult.GetValue(idArg));
+                }
+            });
 
-            //rootCommand.Subcommands.Add(addCommand);
-            //rootCommand.Subcommands.Add(listCommand);
+            updateCommand.SetAction(parseResult => {
+                ToDo.UpdateTask(parseResult.GetValue(idArg), parseResult.GetValue(nameArg)??"");
+            });
 
             addCommand.SetAction(parseResult =>
             {
-                if (parseResult.GetValue(titleOption) != null)
-                {
-                    ToDo todo = new ToDo(parseResult.GetValue(titleOption) ?? "", parseResult.GetValue(descOptiion) ?? "", parseResult.GetValue(doneOption));
-                    todo.AddTask(todo);
-                }
-                else
-                {
-                    Console.WriteLine("Название не вписано");
-                }
+                    ToDo todo = new ToDo(parseResult.GetValue(nameArg) ?? "", parseResult.GetValue(doneOption));
+                todo.AddTask(todo);
             });
 
             listCommand.SetAction(parseResult =>
             {
-
-                bool all = parseResult.GetValue(allOption);
-
-                List<ToDo> tasks = all ? ToDo.LoadTasks() : ToDo.LoadTasks().Where(v => v.IsCompleted == false).ToList();
-
-                Console.WriteLine($"{(tasks.Count > 0 ? $"\n Отображаем лист {(!all ? "не завершенных" : "всех")} заданий: " : "Данных нет")}");
-
-                foreach (ToDo todo in tasks)
-                {
-                    Console.WriteLine($"[{todo.CreateAt.ToShortDateString()}] (ID: {todo.Id}) {todo.Name} {todo.Description} {(todo.IsCompleted ? $"выполнено [{todo.DoneAt.ToShortDateString()}]" : "не выполнено")}");
-                }
+                ToDo.ShowTasks(parseResult.GetValue(statArg)??"");
             });
 
             doneCommand.SetAction(parseResult => 

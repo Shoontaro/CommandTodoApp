@@ -1,43 +1,63 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.CommandLine;
 using System.Text;
 using System.Text.Json;
 
 namespace CommandTodoApp
 {
+    public enum Status
+    { 
+        todo,
+        inProgress,
+        done
+    }
+
     public class ToDo
     {
         public int Id { get; set; }
         public string Name { get; set; }// = "Task";
-        public string Description { get; set; }// = "Description";
+      //  public string Description { get; set; }// = "Description";
+        public Status status { get; set; } = Status.todo;
         public DateTime CreateAt { get; set; }
         public DateTime DoneAt { get; set; }
         public bool IsCompleted { get; set; }
 
         public ToDo() { }
-        public ToDo(string name, string desc)
+        public ToDo(string name)
         {
             this.Name = name;
-            this.Description = desc;
+           // this.Description = desc;
             CreateAt = DateTime.Now;
         }
 
-        public ToDo(string name, string desc, bool isCompleted) : this(name, desc)
+        public ToDo(string name, bool isCompleted) : this(name)
         {
             IsCompleted = isCompleted;
-            DoneAt = DateTime.Now;
+            if (isCompleted)
+            {
+                this.status = Status.done;
+                DoneAt = DateTime.Now;
+            }
         }
 
-        public ToDo(string name, string description, DateTime createAt, DateTime doneAt, bool isCompleted) : this(name, description, isCompleted)
-        {
-            CreateAt = createAt;
-            DoneAt = doneAt;
-        }
+        //public ToDo(string name, string description, DateTime createAt, DateTime doneAt, bool isCompleted) : this(name, description, isCompleted)
+        //{
+        //    CreateAt = createAt;
+        //    DoneAt = doneAt;
+        //}
 
         public void Done() {
-            if (this.IsCompleted) return;
+            if (this.status == Status.done) return;
 
-            this.IsCompleted = true;
+            //this.IsCompleted = true;
+            this.status = Status.done;
+            this.DoneAt = DateTime.Now;
+        }
+        public void InProgress() {
+            if (this.status == Status.inProgress) return;
+
+            this.status = Status.inProgress;
             this.DoneAt = DateTime.Now;
         }
 
@@ -45,8 +65,8 @@ namespace CommandTodoApp
         {
             Console.WriteLine($"\n Создаем таск. \n" +
                    $" Название {task.Name}\n" +
-                   $" Описание {task.Description} \n" +
-                   $" Готовность {task.IsCompleted}");
+                 //  $" Описание {task.Description} \n" +
+                   $" Готовность {task.status}");
 
             List<ToDo> tasks = LoadTasks();
             task.Id = tasks.Count > 0 ? tasks.Last().Id + 1 : 1;
@@ -73,6 +93,67 @@ namespace CommandTodoApp
             File.WriteAllText(Program.FilePath, json);  //вписывание объектов в файл
         }
 
+        public static void UpdateTask(int id, string name) {
+            List<ToDo> tasks = LoadTasks();
+
+            ToDo task = tasks.Find(v => v.Id == id);
+            if (task == null) { Console.WriteLine("Нет задачи с таким id"); return; }
+
+            task.Name = name;
+
+            SaveTasks(tasks);
+
+            Console.WriteLine($"Задача {id} изменена");
+        }
+
+        public static void ShowTasks(string stat) {
+            List<ToDo> tasks = new List<ToDo>();
+            string mess = "";
+
+            switch (stat.Trim().ToLower())
+            {
+                case "all":
+                    tasks = ToDo.LoadTasks();
+                    mess = "\n Отображаем лист всех заданий:";
+                    break;
+
+                case "done":
+                    tasks = ToDo.LoadTasks().Where(v => v.status == Status.done).ToList();
+                    mess = "\n Отображаем лист выполненных заданий:";
+                    break;
+                case "todo":
+                    tasks = ToDo.LoadTasks().Where(v => v.status == Status.todo).ToList();
+                    mess = "\n Отображаем лист запланированных заданий:";
+                    break;
+                case "in-progress":
+                    tasks = ToDo.LoadTasks().Where(v => v.status == Status.inProgress).ToList();
+                    mess = "\n Отображаем лист заданий в процессе выполнения:";
+                    break;
+            }
+
+            Console.WriteLine($"{(tasks.Count > 0 ? mess : "Данных нет")}");
+
+            foreach (ToDo todo in tasks)
+            {
+                //Console.WriteLine($"[{todo.CreateAt.ToShortDateString()}] (ID: {todo.Id}) {todo.Name} {todo.Description} {(todo.IsCompleted ? $"выполнено [{todo.DoneAt.ToShortDateString()}]" : "не выполнено")}");
+                Console.WriteLine($"[{todo.CreateAt.ToShortDateString()}] (ID: {todo.Id}) {todo.Name} {todo.status}");
+            }
+        }
+
+        public static void TaskInProgress(int id) {
+            List<ToDo> tasks = LoadTasks();
+
+            ToDo task = tasks.Find(v => v.Id == id);
+
+            if (task == null) { Console.WriteLine("Нет задачи с таким id"); return; }
+
+            task.InProgress();
+
+            SaveTasks(tasks);
+
+            Console.WriteLine($"Задача {id} отмечена как в процессе");
+        }
+
         public static void DoneTask(int id) 
         {
             List<ToDo> tasks = LoadTasks();
@@ -84,6 +165,8 @@ namespace CommandTodoApp
             task.Done();
 
             SaveTasks(tasks);
+
+            Console.WriteLine($"Задача {id} отмечена как завершенная");
         }
 
         public static void DeleteTask(int id) 
