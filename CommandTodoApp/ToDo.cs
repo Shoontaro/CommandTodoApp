@@ -41,12 +41,6 @@ namespace CommandTodoApp
             }
         }
 
-        //public ToDo(string name, string description, DateTime createAt, DateTime doneAt, bool isCompleted) : this(name, description, isCompleted)
-        //{
-        //    CreateAt = createAt;
-        //    DoneAt = doneAt;
-        //}
-
         public void Done() {
             if (this.status == Status.done) return;
 
@@ -65,7 +59,6 @@ namespace CommandTodoApp
         {
             Console.WriteLine($"\n Создаем таск. \n" +
                    $" Название {task.Name}\n" +
-                 //  $" Описание {task.Description} \n" +
                    $" Готовность {task.status}");
 
             List<ToDo> tasks = LoadTasks();
@@ -135,7 +128,6 @@ namespace CommandTodoApp
 
             foreach (ToDo todo in tasks)
             {
-                //Console.WriteLine($"[{todo.CreateAt.ToShortDateString()}] (ID: {todo.Id}) {todo.Name} {todo.Description} {(todo.IsCompleted ? $"выполнено [{todo.DoneAt.ToShortDateString()}]" : "не выполнено")}");
                 Console.WriteLine($"[{todo.CreateAt.ToShortDateString()}] (ID: {todo.Id}) {todo.Name} {todo.status}");
             }
         }

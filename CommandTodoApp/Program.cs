@@ -10,8 +10,6 @@ namespace CommandTodoApp;
 
 class Program
 {
-
-    // public static readonly string FilePath = "todos.txt";
     public static readonly string FilePath = Path.Combine(Directory.GetCurrentDirectory(), "todos.json");
 
 
@@ -44,20 +42,10 @@ class Program
                 Description = "Статус выводимых данных (done/todo/in-progress)"
             };
 
-            //Option<bool> allOption = new("--all")
-            //{
-            //    Description = "Вывести все задачи"
-            //};
-
             Option<string> titleOption = new(name: "--title", aliases: "-ttl")
             {
                 Description = "Задать название задачи"
             };
-
-            //Option<string> descOptiion = new(name: "--desc", aliases: "-d")
-            //{
-            //    Description = "Задать описание задачи"
-            //};
 
             Option<bool> doneOption = new("--done")
             {
@@ -67,8 +55,6 @@ class Program
             Command addCommand = new("add", "Создать задачу") //подкоманда
             {
                 nameArg,
-               // titleOption,
-              //  descOptiion,
                 doneOption
             };
             addCommand.Aliases.Add("create");
@@ -150,10 +136,7 @@ class Program
                 ToDo.DeleteTask(parseResult.GetValue(idArg));
             });
 
-            rootCommand.Parse(command).Invoke(); //запуск делегата
+            rootCommand.Parse(command).Invoke();
         }
     }
-
-
-
 }
