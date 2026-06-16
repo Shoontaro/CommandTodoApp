@@ -29,14 +29,14 @@ class Program
             Console.WriteLine();
             string command = Console.ReadLine() ?? "";
 
-            //       var nameOption = new Option<string>(
-            //name: "--name",
-            //aliases: new[] { "-n" }
-            //);
-
             Argument<int> idArg = new("id")
             { 
             Description = "id задачи"
+            };
+
+            Argument<string> nameArg = new("name")
+            {
+                Description = "Название задачи"
             };
 
             Argument<string> statArg = new("status") {
@@ -54,10 +54,10 @@ class Program
                 Description = "Задать название задачи"
             };
 
-            Option<string> descOptiion = new(name: "--desc", aliases: "-d")
-            {
-                Description = "Задать описание задачи"
-            };
+            //Option<string> descOptiion = new(name: "--desc", aliases: "-d")
+            //{
+            //    Description = "Задать описание задачи"
+            //};
 
             Option<bool> doneOption = new("--done")
             {
@@ -66,8 +66,9 @@ class Program
 
             Command addCommand = new("add", "Создать задачу") //подкоманда
             {
-                titleOption,
-                descOptiion,
+                nameArg,
+               // titleOption,
+              //  descOptiion,
                 doneOption
             };
             addCommand.Aliases.Add("create");
@@ -83,18 +84,24 @@ class Program
             {
                 idArg
             };
+            doneCommand.Aliases.Add("done");
 
             Command inProgressCommand = new Command("mark-in-progress", "Задача в процессе")
             {
                 idArg
             };
+            inProgressCommand.Aliases.Add("progress");
 
             Command delCommand = new Command("delete", "Удалить задачу")
             {
                 idArg
             };
-
             delCommand.Aliases.Add("del");
+
+            Command updateCommand = new Command("update", "Обновить задачу") { 
+                idArg,
+                nameArg
+            };
 
             RootCommand rootCommand = new("Todo проект с использованием System.CommandLine")
             {
@@ -102,27 +109,27 @@ class Program
             listCommand,
             doneCommand,
             delCommand,
-            inProgressCommand
+            inProgressCommand,
+            updateCommand
             };
-            // rootCommand.Options.Add(lastOption);
-
-            //rootCommand.Subcommands.Add(addCommand);
-            //rootCommand.Subcommands.Add(listCommand);
-
+            
             inProgressCommand.SetAction(parseResult => 
             {
                 if (parseResult.GetValue(idArg) > 0)
                 {
-                    ToDo.DoneTask(parseResult.GetValue(idArg));
+                    ToDo.TaskInProgress(parseResult.GetValue(idArg));
                 }
             });
-            
+
+            updateCommand.SetAction(parseResult => {
+                ToDo.UpdateTask(parseResult.GetValue(idArg), parseResult.GetValue(nameArg)??"");
+            });
 
             addCommand.SetAction(parseResult =>
             {
                 if (parseResult.GetValue(titleOption) != null)
                 {
-                    ToDo todo = new ToDo(parseResult.GetValue(titleOption) ?? "", parseResult.GetValue(descOptiion) ?? "", parseResult.GetValue(doneOption));
+                    ToDo todo = new ToDo(parseResult.GetValue(titleOption) ?? "", parseResult.GetValue(doneOption));
                     todo.AddTask(todo);
                 }
                 else
@@ -164,13 +171,12 @@ class Program
                             break;
                     }
                 
-
                 Console.WriteLine($"{(tasks.Count > 0 ? mess : "Данных нет")}");
 
                 foreach (ToDo todo in tasks)
                 {
                     //Console.WriteLine($"[{todo.CreateAt.ToShortDateString()}] (ID: {todo.Id}) {todo.Name} {todo.Description} {(todo.IsCompleted ? $"выполнено [{todo.DoneAt.ToShortDateString()}]" : "не выполнено")}");
-                    Console.WriteLine($"[{todo.CreateAt.ToShortDateString()}] (ID: {todo.Id}) {todo.Name} {todo.Description} {todo.status}");
+                    Console.WriteLine($"[{todo.CreateAt.ToShortDateString()}] (ID: {todo.Id}) {todo.Name} {todo.status}");
                 }
             });
 

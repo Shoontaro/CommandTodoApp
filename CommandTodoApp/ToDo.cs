@@ -16,21 +16,21 @@ namespace CommandTodoApp
     {
         public int Id { get; set; }
         public string Name { get; set; }// = "Task";
-        public string Description { get; set; }// = "Description";
+      //  public string Description { get; set; }// = "Description";
         public Status status { get; set; } = Status.todo;
         public DateTime CreateAt { get; set; }
         public DateTime DoneAt { get; set; }
         public bool IsCompleted { get; set; }
 
         public ToDo() { }
-        public ToDo(string name, string desc)
+        public ToDo(string name)
         {
             this.Name = name;
-            this.Description = desc;
+           // this.Description = desc;
             CreateAt = DateTime.Now;
         }
 
-        public ToDo(string name, string desc, bool isCompleted) : this(name, desc)
+        public ToDo(string name, bool isCompleted) : this(name)
         {
             IsCompleted = isCompleted;
             if (isCompleted)
@@ -64,7 +64,7 @@ namespace CommandTodoApp
         {
             Console.WriteLine($"\n Создаем таск. \n" +
                    $" Название {task.Name}\n" +
-                   $" Описание {task.Description} \n" +
+                 //  $" Описание {task.Description} \n" +
                    $" Готовность {task.status}");
 
             List<ToDo> tasks = LoadTasks();
@@ -92,6 +92,19 @@ namespace CommandTodoApp
             File.WriteAllText(Program.FilePath, json);  //вписывание объектов в файл
         }
 
+        public static void UpdateTask(int id, string name) {
+            List<ToDo> tasks = LoadTasks();
+
+            ToDo task = tasks.Find(v => v.Id == id);
+            if (task == null) { Console.WriteLine("Нет задачи с таким id"); return; }
+
+            task.Name = name;
+
+            SaveTasks(tasks);
+
+            Console.WriteLine($"Задача {id} изменена");
+        }
+
         public static void TaskInProgress(int id) {
             List<ToDo> tasks = LoadTasks();
 
@@ -102,6 +115,8 @@ namespace CommandTodoApp
             task.InProgress();
 
             SaveTasks(tasks);
+
+            Console.WriteLine($"Задача {id} отмечена как в процессе");
         }
 
         public static void DoneTask(int id) 
@@ -115,6 +130,8 @@ namespace CommandTodoApp
             task.Done();
 
             SaveTasks(tasks);
+
+            Console.WriteLine($"Задача {id} отмечена как завершенная");
         }
 
         public static void DeleteTask(int id) 
