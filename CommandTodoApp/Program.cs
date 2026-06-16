@@ -127,57 +127,13 @@ class Program
 
             addCommand.SetAction(parseResult =>
             {
-                if (parseResult.GetValue(titleOption) != null)
-                {
-                    ToDo todo = new ToDo(parseResult.GetValue(titleOption) ?? "", parseResult.GetValue(doneOption));
-                    todo.AddTask(todo);
-                }
-                else
-                {
-                    Console.WriteLine("Название не вписано");
-                }
+                    ToDo todo = new ToDo(parseResult.GetValue(nameArg) ?? "", parseResult.GetValue(doneOption));
+                todo.AddTask(todo);
             });
 
             listCommand.SetAction(parseResult =>
             {
-
-                //bool all = parseResult.GetValue(allOption);
-
-                //List<ToDo> tasks = all ? ToDo.LoadTasks() : ToDo.LoadTasks().Where(v => v.IsCompleted == false).ToList();
-
-                // Console.WriteLine($"{(tasks.Count > 0 ? $"\n Отображаем лист {(!all ? "не завершенных" : "всех")} заданий: " : "Данных нет")}");
-
-                List<ToDo> tasks = new List<ToDo>();
-                string mess = "";
-
-                    string stat = parseResult.GetValue(statArg)??"";
-                    switch (stat.Trim().ToLower()) {
-                        case "all":
-                            tasks = ToDo.LoadTasks();
-                            mess = "\n Отображаем лист всех заданий:";
-                            break;
-
-                        case "done":
-                            tasks = ToDo.LoadTasks().Where(v=>v.status == Status.done).ToList();
-                            mess = "\n Отображаем лист выполненных заданий:";
-                            break;
-                        case "todo":
-                            tasks = ToDo.LoadTasks().Where(v => v.status == Status.todo).ToList();
-                            mess = "\n Отображаем лист запланированных заданий:";
-                            break;
-                        case "in-progress":
-                            tasks = ToDo.LoadTasks().Where(v => v.status == Status.inProgress).ToList();
-                            mess = "\n Отображаем лист заданий в процессе выполнения:";
-                            break;
-                    }
-                
-                Console.WriteLine($"{(tasks.Count > 0 ? mess : "Данных нет")}");
-
-                foreach (ToDo todo in tasks)
-                {
-                    //Console.WriteLine($"[{todo.CreateAt.ToShortDateString()}] (ID: {todo.Id}) {todo.Name} {todo.Description} {(todo.IsCompleted ? $"выполнено [{todo.DoneAt.ToShortDateString()}]" : "не выполнено")}");
-                    Console.WriteLine($"[{todo.CreateAt.ToShortDateString()}] (ID: {todo.Id}) {todo.Name} {todo.status}");
-                }
+                ToDo.ShowTasks(parseResult.GetValue(statArg)??"");
             });
 
             doneCommand.SetAction(parseResult => 

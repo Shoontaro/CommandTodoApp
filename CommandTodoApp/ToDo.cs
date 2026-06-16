@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.CommandLine;
 using System.Text;
 using System.Text.Json;
 
@@ -103,6 +104,40 @@ namespace CommandTodoApp
             SaveTasks(tasks);
 
             Console.WriteLine($"Задача {id} изменена");
+        }
+
+        public static void ShowTasks(string stat) {
+            List<ToDo> tasks = new List<ToDo>();
+            string mess = "";
+
+            switch (stat.Trim().ToLower())
+            {
+                case "all":
+                    tasks = ToDo.LoadTasks();
+                    mess = "\n Отображаем лист всех заданий:";
+                    break;
+
+                case "done":
+                    tasks = ToDo.LoadTasks().Where(v => v.status == Status.done).ToList();
+                    mess = "\n Отображаем лист выполненных заданий:";
+                    break;
+                case "todo":
+                    tasks = ToDo.LoadTasks().Where(v => v.status == Status.todo).ToList();
+                    mess = "\n Отображаем лист запланированных заданий:";
+                    break;
+                case "in-progress":
+                    tasks = ToDo.LoadTasks().Where(v => v.status == Status.inProgress).ToList();
+                    mess = "\n Отображаем лист заданий в процессе выполнения:";
+                    break;
+            }
+
+            Console.WriteLine($"{(tasks.Count > 0 ? mess : "Данных нет")}");
+
+            foreach (ToDo todo in tasks)
+            {
+                //Console.WriteLine($"[{todo.CreateAt.ToShortDateString()}] (ID: {todo.Id}) {todo.Name} {todo.Description} {(todo.IsCompleted ? $"выполнено [{todo.DoneAt.ToShortDateString()}]" : "не выполнено")}");
+                Console.WriteLine($"[{todo.CreateAt.ToShortDateString()}] (ID: {todo.Id}) {todo.Name} {todo.status}");
+            }
         }
 
         public static void TaskInProgress(int id) {
