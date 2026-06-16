@@ -16,7 +16,7 @@
 add "new task"
 
 // Updating and deleting tasks
-update 1 "Buy groceries and cook dinner"
+update 1 "task was update"
 delete 1
 
 // Marking a task as in progress or done
