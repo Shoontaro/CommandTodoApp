@@ -9,10 +9,10 @@ namespace CommandTodoApp
         public static void ShowTasks(string stat)
         {
             List<ToDo> tasks = stat.Trim().ToLower() switch { //Switch Pattern Matching
-                "all" => ToDo.LoadTasks(),
-                "in-progress" => ToDo.LoadTasks().Where(v => v.status == Status.inProgress).ToList(),
-                "done" => ToDo.LoadTasks().Where(v => v.status == Status.done).ToList(),
-                "todo" => ToDo.LoadTasks().Where(v => v.status == Status.todo).ToList(),
+                "all" => FileRepo.LoadTasks(),
+                "in-progress" => FileRepo.LoadTasks().Where(v => v.status == Status.inProgress).ToList(),
+                "done" => FileRepo.LoadTasks().Where(v => v.status == Status.done).ToList(),
+                "todo" => FileRepo.LoadTasks().Where(v => v.status == Status.todo).ToList(),
                 _=> new List<ToDo>()
             };
 
@@ -40,32 +40,32 @@ namespace CommandTodoApp
                 $" Название {task.Name}\n" +
                 $" Готовность {task.status}");
 
-            List<ToDo> tasks = ToDo.LoadTasks();
+            List<ToDo> tasks = FileRepo.LoadTasks();
             task.Id = tasks.Count > 0 ? tasks.Last().Id + 1 : 1;
 
             tasks.Add(task);
-            ToDo.SaveTasks(tasks);
+            FileRepo.SaveTasks(tasks);
 
             Console.WriteLine($"Задача успешно добавлена! Ее id {task.Id}");
         }
 
         public static void UpdateTask(int id, string name)
         {
-            List<ToDo> tasks = ToDo.LoadTasks();
+            List<ToDo> tasks = FileRepo.LoadTasks();
 
             ToDo task = tasks.Find(v => v.Id == id);
             if (task == null) { Console.WriteLine("Нет задачи с таким id"); return; }
 
             task.Name = name;
 
-            ToDo.SaveTasks(tasks);
+            FileRepo.SaveTasks(tasks);
 
             Console.WriteLine($"Задача {id} изменена");
         }
 
         public static void TaskInProgress(int id)
         {
-            List<ToDo> tasks = ToDo.LoadTasks();
+            List<ToDo> tasks = FileRepo.LoadTasks();
 
             ToDo task = tasks.Find(v => v.Id == id);
 
@@ -73,14 +73,14 @@ namespace CommandTodoApp
 
             task.InProgress();
 
-            ToDo.SaveTasks(tasks);
+            FileRepo.SaveTasks(tasks);
 
             Console.WriteLine($"Задача {id} отмечена как в процессе");
         }
 
         public static void DoneTask(int id)
         {
-            List<ToDo> tasks = ToDo.LoadTasks();
+            List<ToDo> tasks = FileRepo.LoadTasks();
 
             ToDo task = tasks.Find(v => v.Id == id);
 
@@ -88,14 +88,14 @@ namespace CommandTodoApp
 
             task.Done();
 
-            ToDo.SaveTasks(tasks);
+            FileRepo.SaveTasks(tasks);
 
             Console.WriteLine($"Задача {id} отмечена как завершенная");
         }
 
         public static void DeleteTask(int id)
         {
-            List<ToDo> tasks = ToDo.LoadTasks();
+            List<ToDo> tasks = FileRepo.LoadTasks();
 
             ToDo task = tasks.Find(v => v.Id == id);
 
@@ -103,7 +103,7 @@ namespace CommandTodoApp
 
             tasks.Remove(task);
 
-            ToDo.SaveTasks(tasks);
+            FileRepo.SaveTasks(tasks);
 
             Console.WriteLine("Задача удалена");
         }

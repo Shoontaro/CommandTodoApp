@@ -17,7 +17,6 @@ namespace CommandTodoApp
     {
         public int Id { get; set; }
         public string Name { get; set; }// = "Task";
-      //  public string Description { get; set; }// = "Description";
         public Status status { get; set; } = Status.todo;
         public DateTime CreateAt { get; set; }
         public DateTime DoneAt { get; set; }
@@ -27,7 +26,6 @@ namespace CommandTodoApp
         public ToDo(string name)
         {
             this.Name = name;
-           // this.Description = desc;
             CreateAt = DateTime.Now;
         }
 
@@ -53,22 +51,6 @@ namespace CommandTodoApp
 
             this.status = Status.inProgress;
             this.DoneAt = DateTime.Now;
-        }
-
-        public static List<ToDo> LoadTasks()
-        {
-            if (!File.Exists(Program.FilePath)) return new List<ToDo>();//возвращаем пустой лист, если файла не существует
-
-            var json = File.ReadAllText(Program.FilePath);
-            return JsonSerializer.Deserialize<List<ToDo>>(json) ?? new List<ToDo>(); //парсинг джейсона
-        }
-
-        public static void SaveTasks(List<ToDo> todos)
-        {
-
-           // Console.WriteLine(Program.FilePath);
-            var json = JsonSerializer.Serialize(todos, new JsonSerializerOptions { WriteIndented = true });
-            File.WriteAllText(Program.FilePath, json);  //вписывание объектов в файл
         }
     }
 }
