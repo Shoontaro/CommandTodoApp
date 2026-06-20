@@ -103,37 +103,37 @@ class Program
             {
                 if (parseResult.GetValue(idArg) > 0)
                 {
-                    ToDo.TaskInProgress(parseResult.GetValue(idArg));
+                    Logic.TaskInProgress(parseResult.GetValue(idArg));
                 }
             });
 
             updateCommand.SetAction(parseResult => {
-                ToDo.UpdateTask(parseResult.GetValue(idArg), parseResult.GetValue(nameArg)??"");
+                Logic.UpdateTask(parseResult.GetValue(idArg), parseResult.GetValue(nameArg)??"");
             });
 
             addCommand.SetAction(parseResult =>
             {
                     ToDo todo = new ToDo(parseResult.GetValue(nameArg) ?? "", parseResult.GetValue(doneOption));
-                todo.AddTask(todo);
+                Logic.AddTask(todo);
             });
 
             listCommand.SetAction(parseResult =>
             {
-                ToDo.ShowTasks(parseResult.GetValue(statArg)??"");
+                Logic.ShowTasks(parseResult.GetValue(statArg)??"");
             });
 
             doneCommand.SetAction(parseResult => 
             {
                 if (parseResult.GetValue(idArg) >0)
                 {
-                    ToDo.DoneTask(parseResult.GetValue(idArg));
+                    Logic.DoneTask(parseResult.GetValue(idArg));
                 }
             });
 
             delCommand.SetAction(parseResult => {
                 Console.WriteLine($"Удаляем запись {parseResult.GetValue(idArg)}");
 
-                ToDo.DeleteTask(parseResult.GetValue(idArg));
+                Logic.DeleteTask(parseResult.GetValue(idArg));
             });
 
             rootCommand.Parse(command).Invoke();
