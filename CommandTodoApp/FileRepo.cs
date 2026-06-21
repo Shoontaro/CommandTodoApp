@@ -5,13 +5,6 @@ using System.Text.Json;
 
 namespace CommandTodoApp
 {
-    public interface IDataProvider
-    {
-       public List<ToDo> LoadTasks();
-
-       public void SaveTasks(List<ToDo> todos);
-    }
-
     public class FileRepo : IDataProvider
     {
         private readonly string FilePath = Path.Combine(Directory.GetCurrentDirectory(), "todos.json");

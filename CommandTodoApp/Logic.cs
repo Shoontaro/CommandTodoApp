@@ -4,15 +4,6 @@ using System.Text;
 
 namespace CommandTodoApp
 {
-    public interface IDataProcessor
-    {
-        void ShowTasks(string stat);
-        void AddTask(ToDo task);
-        void UpdateTask(int id, string name);
-        void TaskInProgress(int id);
-        void DoneTask(int id);
-        void DeleteTask(int id);
-    }
     public class Logic : IDataProcessor
     {
         public IDataProvider dataProvider { get; set; }

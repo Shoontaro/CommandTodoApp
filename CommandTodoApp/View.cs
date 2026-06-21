@@ -5,11 +5,7 @@ using Spectre.Console;
 
 namespace CommandTodoApp
 {
-    public interface IView {
-        void Write(string text);
-        void WriteLine(string text);
-        string Read();
-    }
+   
     public class View : IView
     {
         public void Write(string text) => Console.Write(text);
