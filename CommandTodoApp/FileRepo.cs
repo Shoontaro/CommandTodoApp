@@ -5,26 +5,30 @@ using System.Text.Json;
 
 namespace CommandTodoApp
 {
-    interface IFileRep {
-        public static abstract List<ToDo> LoadTasks();
+    public interface IDataProvider
+    {
+       public List<ToDo> LoadTasks();
+
+       public void SaveTasks(List<ToDo> todos);
     }
 
-    public class FileRepo
+    public class FileRepo : IDataProvider
     {
-        public static List<ToDo> LoadTasks()
+        private readonly string FilePath = Path.Combine(Directory.GetCurrentDirectory(), "todos.json");
+        public List<ToDo> LoadTasks()
         {
-            if (!File.Exists(Program.FilePath)) return new List<ToDo>();//возвращаем пустой лист, если файла не существует
+            if (!File.Exists(FilePath)) return new List<ToDo>();//возвращаем пустой лист, если файла не существует
 
-            var json = File.ReadAllText(Program.FilePath);
+            var json = File.ReadAllText(FilePath);
             return JsonSerializer.Deserialize<List<ToDo>>(json) ?? new List<ToDo>(); //парсинг джейсона
         }
 
-        public static void SaveTasks(List<ToDo> todos)
+        public void SaveTasks(List<ToDo> todos)
         {
 
             // Console.WriteLine(Program.FilePath);
             var json = JsonSerializer.Serialize(todos, new JsonSerializerOptions { WriteIndented = true });
-            File.WriteAllText(Program.FilePath, json);  //вписывание объектов в файл
+            File.WriteAllText(FilePath, json);  //вписывание объектов в файл
         }
     }
 }

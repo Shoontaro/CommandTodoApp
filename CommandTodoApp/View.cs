@@ -5,13 +5,36 @@ using Spectre.Console;
 
 namespace CommandTodoApp
 {
-    public class View
+    public interface IView {
+        void Write(string text);
+        void WriteLine(string text);
+        string Read();
+    }
+    public class View : IView
     {
-        public static void Write(string text) => Console.Write(text);
+        public void Write(string text) => Console.Write(text);
         
-        public static void WriteLine(string text) => Console.WriteLine(text);
+        public void WriteLine(string text) => Console.WriteLine(text);
 
-        public static string Read() => Console.ReadLine()??"";
+        public string Read() => Console.ReadLine()??"";
         
+    }
+
+    public class Spectre : IView
+    {
+        public string Read()
+        {
+           return Console.ReadLine() ?? "";
+        }
+
+        public void Write(string text)
+        {
+            AnsiConsole.Markup(text);
+        }
+
+        public void WriteLine(string text)
+        {
+            AnsiConsole.MarkupLine(text);
+        }
     }
 }

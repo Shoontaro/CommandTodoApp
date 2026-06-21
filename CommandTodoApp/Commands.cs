@@ -5,10 +5,16 @@ using System.Text;
 
 namespace CommandTodoApp
 {
+    public interface ICommands
+    {
+        void GetTask(IDataProcessor dataProcessor);
+    }
+
     public class Commands
     {
-        public static void GetTask()
+        public static void GetTask(IDataProcessor dataProcessor)
         {
+
             while (true)
             {
                 Console.WriteLine();
@@ -91,37 +97,37 @@ namespace CommandTodoApp
                 {
                     if (parseResult.GetValue(idArg) > 0)
                     {
-                        Logic.TaskInProgress(parseResult.GetValue(idArg));
+                        dataProcessor.TaskInProgress(parseResult.GetValue(idArg));
                     }
                 });
 
                 updateCommand.SetAction(parseResult => {
-                    Logic.UpdateTask(parseResult.GetValue(idArg), parseResult.GetValue(nameArg) ?? "");
+                    dataProcessor.UpdateTask(parseResult.GetValue(idArg), parseResult.GetValue(nameArg) ?? "");
                 });
 
                 addCommand.SetAction(parseResult =>
                 {
                     ToDo todo = new ToDo(parseResult.GetValue(nameArg) ?? "", parseResult.GetValue(doneOption));
-                    Logic.AddTask(todo);
+                    dataProcessor.AddTask(todo);
                 });
-
+                
                 listCommand.SetAction(parseResult =>
                 {
-                    Logic.ShowTasks(parseResult.GetValue(statArg) ?? "");
+                    dataProcessor.ShowTasks(parseResult.GetValue(statArg) ?? "");
                 });
 
                 doneCommand.SetAction(parseResult =>
                 {
                     if (parseResult.GetValue(idArg) > 0)
                     {
-                        Logic.DoneTask(parseResult.GetValue(idArg));
+                        dataProcessor.DoneTask(parseResult.GetValue(idArg));
                     }
                 });
 
                 delCommand.SetAction(parseResult => {
                     Console.WriteLine($"Удаляем запись {parseResult.GetValue(idArg)}");
 
-                    Logic.DeleteTask(parseResult.GetValue(idArg));
+                    dataProcessor.DeleteTask(parseResult.GetValue(idArg));
                 });
 
                 rootCommand.Parse(command).Invoke();

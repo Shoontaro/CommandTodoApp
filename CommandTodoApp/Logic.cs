@@ -4,15 +4,31 @@ using System.Text;
 
 namespace CommandTodoApp
 {
-    public class Logic
+    public interface IDataProcessor
     {
-        public static void ShowTasks(string stat)
+        void ShowTasks(string stat);
+        void AddTask(ToDo task);
+        void UpdateTask(int id, string name);
+        void TaskInProgress(int id);
+        void DoneTask(int id);
+        void DeleteTask(int id);
+    }
+    public class Logic : IDataProcessor
+    {
+        public IDataProvider dataProvider { get; set; }
+        public IView view { get; set; }
+        public Logic(IDataProvider dataProvider, IView view) {
+        this.dataProvider = dataProvider;
+            this.view = view;
+        }
+
+        public void ShowTasks(string stat)
         {
             List<ToDo> tasks = stat.Trim().ToLower() switch { //Switch Pattern Matching
-                "all" => FileRepo.LoadTasks(),
-                "in-progress" => FileRepo.LoadTasks().Where(v => v.status == Status.inProgress).ToList(),
-                "done" => FileRepo.LoadTasks().Where(v => v.status == Status.done).ToList(),
-                "todo" => FileRepo.LoadTasks().Where(v => v.status == Status.todo).ToList(),
+                "all" => dataProvider.LoadTasks(),
+                "in-progress" => dataProvider.LoadTasks().Where(v => v.status == Status.inProgress).ToList(),
+                "done" => dataProvider.LoadTasks().Where(v => v.status == Status.done).ToList(),
+                "todo" => dataProvider.LoadTasks().Where(v => v.status == Status.todo).ToList(),
                 _=> new List<ToDo>()
             };
 
@@ -25,87 +41,87 @@ namespace CommandTodoApp
                 _ => ""
             };
 
-            Console.WriteLine($"{(tasks.Count > 0 ? mess : "Данных нет")}");
+            view.WriteLine($"{(tasks.Count > 0 ? mess : "Данных нет")}");
 
             foreach (ToDo todo in tasks)
             {
-                Console.WriteLine($"[{todo.CreateAt.ToShortDateString()}] (ID: {todo.Id}) {todo.Name} {todo.status}");
+                view.WriteLine($"[{todo.CreateAt.ToShortDateString()}] (ID: {todo.Id}) {todo.Name} {todo.status}");
             }
         }
 
-        public static void AddTask(ToDo task)
+        public void AddTask(ToDo task)
         {
-            Console.WriteLine(
+            view.WriteLine(
                 $"\n Создаем таск. \n" +
                 $" Название {task.Name}\n" +
                 $" Готовность {task.status}");
 
-            List<ToDo> tasks = FileRepo.LoadTasks();
+            List<ToDo> tasks = dataProvider.LoadTasks();
             task.Id = tasks.Count > 0 ? tasks.Last().Id + 1 : 1;
 
             tasks.Add(task);
-            FileRepo.SaveTasks(tasks);
+            dataProvider.SaveTasks(tasks);
 
-            Console.WriteLine($"Задача успешно добавлена! Ее id {task.Id}");
+            view.WriteLine($"Задача успешно добавлена! Ее id {task.Id}");
         }
 
-        public static void UpdateTask(int id, string name)
+        public void UpdateTask(int id, string name)
         {
-            List<ToDo> tasks = FileRepo.LoadTasks();
+            List<ToDo> tasks = dataProvider.LoadTasks();
 
             ToDo task = tasks.Find(v => v.Id == id);
-            if (task == null) { Console.WriteLine("Нет задачи с таким id"); return; }
+            if (task == null) { view.WriteLine("Нет задачи с таким id"); return; }
 
             task.Name = name;
 
-            FileRepo.SaveTasks(tasks);
+            dataProvider.SaveTasks(tasks);
 
-            Console.WriteLine($"Задача {id} изменена");
+            view.WriteLine($"Задача {id} изменена");
         }
 
-        public static void TaskInProgress(int id)
+        public void TaskInProgress(int id)
         {
-            List<ToDo> tasks = FileRepo.LoadTasks();
+            List<ToDo> tasks = dataProvider.LoadTasks();
 
             ToDo task = tasks.Find(v => v.Id == id);
 
-            if (task == null) { Console.WriteLine("Нет задачи с таким id"); return; }
+            if (task == null) { view.WriteLine("Нет задачи с таким id"); return; }
 
             task.InProgress();
 
-            FileRepo.SaveTasks(tasks);
+            dataProvider.SaveTasks(tasks);
 
-            Console.WriteLine($"Задача {id} отмечена как в процессе");
+            view.WriteLine($"Задача {id} отмечена как в процессе");
         }
 
-        public static void DoneTask(int id)
+        public void DoneTask(int id)
         {
-            List<ToDo> tasks = FileRepo.LoadTasks();
+            List<ToDo> tasks = dataProvider.LoadTasks();
 
             ToDo task = tasks.Find(v => v.Id == id);
 
-            if (task == null) { Console.WriteLine("Нет задачи с таким id"); return; }
+            if (task == null) { view.WriteLine("Нет задачи с таким id"); return; }
 
             task.Done();
 
-            FileRepo.SaveTasks(tasks);
+            dataProvider.SaveTasks(tasks);
 
-            Console.WriteLine($"Задача {id} отмечена как завершенная");
+            view.WriteLine($"Задача {id} отмечена как завершенная");
         }
 
-        public static void DeleteTask(int id)
+        public void DeleteTask(int id)
         {
-            List<ToDo> tasks = FileRepo.LoadTasks();
+            List<ToDo> tasks = dataProvider.LoadTasks();
 
             ToDo task = tasks.Find(v => v.Id == id);
 
-            if (task == null) { Console.WriteLine("Нет задачи с таким id"); return; }
+            if (task == null) { view.WriteLine("Нет задачи с таким id"); return; }
 
             tasks.Remove(task);
 
-            FileRepo.SaveTasks(tasks);
+            dataProvider.SaveTasks(tasks);
 
-            Console.WriteLine("Задача удалена");
+            view.WriteLine("Задача удалена");
         }
 
     }
