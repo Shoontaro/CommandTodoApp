@@ -13,13 +13,15 @@ namespace CommandTodoApp
             this.view = view;
         }
 
-        public void ShowTasks(string stat)
+        public async Task ShowTasksAsync(string stat)
         {
+            List<ToDo> fromDB = await dataProvider.LoadTasksAsync();
+
             List<ToDo> tasks = stat.Trim().ToLower() switch { //Switch Pattern Matching
-                "all" => dataProvider.LoadTasks(),
-                "in-progress" => dataProvider.LoadTasks().Where(v => v.status == Status.inProgress).ToList(),
-                "done" => dataProvider.LoadTasks().Where(v => v.status == Status.done).ToList(),
-                "todo" => dataProvider.LoadTasks().Where(v => v.status == Status.todo).ToList(),
+                "all" => fromDB,
+                "in-progress" => fromDB.Where(v => v.status == Status.inProgress).ToList(),
+                "done" => fromDB.Where(v => v.status == Status.done).ToList(),
+                "todo" => fromDB.Where(v => v.status == Status.todo).ToList(),
                 _=> new List<ToDo>()
             };
 
@@ -40,80 +42,79 @@ namespace CommandTodoApp
             }
         }
 
-        public void AddTask(ToDo task)
+        public async Task AddTaskAsync(ToDo task)
         {
             view.WriteLine(
                 $"\n Создаем таск. \n" +
                 $" Название {task.Name}\n" +
                 $" Готовность {task.status}");
 
-            List<ToDo> tasks = dataProvider.LoadTasks();
+            List<ToDo> tasks = await dataProvider.LoadTasksAsync();
             task.Id = tasks.Count > 0 ? tasks.Last().Id + 1 : 1;
 
             tasks.Add(task);
-            dataProvider.SaveTasks(tasks);
+            await dataProvider.SaveTasksAsync(tasks);
 
             view.WriteLine($"Задача успешно добавлена! Ее id {task.Id}");
         }
 
-        public void UpdateTask(int id, string name)
+        public async Task UpdateTaskAsync(int id, string name)
         {
-            List<ToDo> tasks = dataProvider.LoadTasks();
+            List<ToDo> tasks = await dataProvider.LoadTasksAsync();
 
-            ToDo task = tasks.Find(v => v.Id == id);
+            ToDo task = tasks.Find(v => v.Id == id)?? new ToDo();
             if (task == null) { view.WriteLine("Нет задачи с таким id"); return; }
 
             task.Name = name;
 
-            dataProvider.SaveTasks(tasks);
+            await dataProvider.SaveTasksAsync(tasks);
 
             view.WriteLine($"Задача {id} изменена");
         }
 
-        public void TaskInProgress(int id)
+        public async Task TaskInProgressAsync(int id)
         {
-            List<ToDo> tasks = dataProvider.LoadTasks();
+            List<ToDo> tasks = await dataProvider.LoadTasksAsync();
 
-            ToDo task = tasks.Find(v => v.Id == id);
+            ToDo task = tasks.Find(v => v.Id == id)?? new ToDo();
 
             if (task == null) { view.WriteLine("Нет задачи с таким id"); return; }
 
             task.InProgress();
 
-            dataProvider.SaveTasks(tasks);
+            await dataProvider.SaveTasksAsync(tasks);
 
             view.WriteLine($"Задача {id} отмечена как в процессе");
         }
 
-        public void DoneTask(int id)
+        public async Task DoneTaskAsync(int id)
         {
-            List<ToDo> tasks = dataProvider.LoadTasks();
+            List<ToDo> tasks = await dataProvider.LoadTasksAsync();
 
-            ToDo task = tasks.Find(v => v.Id == id);
+            ToDo task = tasks.Find(v => v.Id == id)?? new ToDo();
 
             if (task == null) { view.WriteLine("Нет задачи с таким id"); return; }
 
             task.Done();
 
-            dataProvider.SaveTasks(tasks);
+            await dataProvider.SaveTasksAsync(tasks);
 
             view.WriteLine($"Задача {id} отмечена как завершенная");
         }
 
-        public void DeleteTask(int id)
+        public async Task DeleteTaskAsync(int id)
         {
-            List<ToDo> tasks = dataProvider.LoadTasks();
+            List<ToDo> tasks = await dataProvider.LoadTasksAsync();
 
-            ToDo task = tasks.Find(v => v.Id == id);
+            ToDo task = tasks.Find(v => v.Id == id) ?? new ToDo();
 
             if (task == null) { view.WriteLine("Нет задачи с таким id"); return; }
 
             tasks.Remove(task);
 
-            dataProvider.SaveTasks(tasks);
+            await dataProvider.SaveTasksAsync(tasks);
 
             view.WriteLine("Задача удалена");
         }
-
     }
 }

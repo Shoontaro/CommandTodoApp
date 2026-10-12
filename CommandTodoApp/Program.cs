@@ -10,11 +10,11 @@ namespace CommandTodoApp;
 
 class Program
 {
-    private static void Main(string[] args)
+    private static async Task Main(string[] args)
     {
         Console.WriteLine("Приложение для задачь. Добавьте задачу");
 
-        Commands.GetTask(new Logic(new FileRepo(), new Spectre()));
+       await Commands.GetTask(new Logic(new FileRepo(), new View()));
     }
 
   

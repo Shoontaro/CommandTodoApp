@@ -12,17 +12,17 @@ namespace CommandTodoApp
     }
     public interface IDataProvider
     {
-        public List<ToDo> LoadTasks();
+        public Task<List<ToDo>> LoadTasksAsync();
 
-        public void SaveTasks(List<ToDo> todos);
+        public Task SaveTasksAsync(List<ToDo> todos);
     }
     public interface IDataProcessor
     {
-        void ShowTasks(string stat);
-        void AddTask(ToDo task);
-        void UpdateTask(int id, string name);
-        void TaskInProgress(int id);
-        void DoneTask(int id);
-        void DeleteTask(int id);
+        Task ShowTasksAsync(string stat);
+        Task AddTaskAsync(ToDo task);
+        Task UpdateTaskAsync(int id, string name);
+        Task TaskInProgressAsync(int id);
+        Task DoneTaskAsync(int id);
+        Task DeleteTaskAsync(int id);
     }
 }

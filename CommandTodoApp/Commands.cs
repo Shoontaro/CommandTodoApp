@@ -12,7 +12,7 @@ namespace CommandTodoApp
 
     public class Commands
     {
-        public static void GetTask(IDataProcessor dataProcessor)
+        public static async Task GetTask(IDataProcessor dataProcessor)
         {
 
             while (true)
@@ -93,44 +93,48 @@ namespace CommandTodoApp
             updateCommand
             };
 
-                inProgressCommand.SetAction(parseResult =>
+                inProgressCommand.SetAction(async parseResult =>
                 {
                     if (parseResult.GetValue(idArg) > 0)
                     {
-                        dataProcessor.TaskInProgress(parseResult.GetValue(idArg));
+                        await dataProcessor.TaskInProgressAsync(parseResult.GetValue(idArg));
                     }
                 });
 
-                updateCommand.SetAction(parseResult => {
-                    dataProcessor.UpdateTask(parseResult.GetValue(idArg), parseResult.GetValue(nameArg) ?? "");
+                updateCommand.SetAction(async parseResult => {
+                    await dataProcessor.UpdateTaskAsync(parseResult.GetValue(idArg), parseResult.GetValue(nameArg) ?? "");
                 });
 
-                addCommand.SetAction(parseResult =>
+                addCommand.SetAction(async parseResult =>
                 {
                     ToDo todo = new ToDo(parseResult.GetValue(nameArg) ?? "", parseResult.GetValue(doneOption));
-                    dataProcessor.AddTask(todo);
+                    await dataProcessor.AddTaskAsync(todo);
                 });
                 
-                listCommand.SetAction(parseResult =>
+                listCommand.SetAction(async parseResult =>
                 {
-                    dataProcessor.ShowTasks(parseResult.GetValue(statArg) ?? "");
+                    await dataProcessor.ShowTasksAsync(parseResult.GetValue(statArg) ?? "");
                 });
 
-                doneCommand.SetAction(parseResult =>
+                doneCommand.SetAction(async parseResult =>
                 {
                     if (parseResult.GetValue(idArg) > 0)
                     {
-                        dataProcessor.DoneTask(parseResult.GetValue(idArg));
+                       await dataProcessor.DoneTaskAsync(parseResult.GetValue(idArg));
                     }
                 });
 
-                delCommand.SetAction(parseResult => {
-                    Console.WriteLine($"Удаляем запись {parseResult.GetValue(idArg)}");
+                delCommand.SetAction(async parseResult => {
 
-                    dataProcessor.DeleteTask(parseResult.GetValue(idArg));
+                    int id = parseResult.GetValue(idArg);
+
+                    Console.WriteLine($"Удаляем запись {id}");
+
+                    await dataProcessor.DeleteTaskAsync(id);
                 });
+                await rootCommand.Parse(command).InvokeAsync();
 
-                rootCommand.Parse(command).Invoke();
+                //rootCommand.Parse(command).Invoke();
             }
         }
     }
